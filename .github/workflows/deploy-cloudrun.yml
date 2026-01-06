@@ -26,7 +26,7 @@ jobs:
     # Step 3: Build Docker image dan push ke GCR
     - name: Build Docker image
       run: |
-        gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/cloudrun-najwa-deploy-codelab
+        gcloud builds submit --tag gcr.io/udb-ti-24a1/cloudrun-najwa-deploy-codelab
 
     # Step 4: Deploy image ke Cloud Run
     - name: Deploy to Cloud Run
