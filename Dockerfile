@@ -1,23 +1,18 @@
-<<<<<<< HEAD
-FROM n8nio/n8n:latest
-
-ENV N8N_PORT=8080
-ENV N8N_HOST=0.0.0.0
-ENV N8N_PROTOCOL=http
-
-EXPOSE 8080
-=======
-# Gunakan Node.js versi 20
-FROM node:20-slim
+FROM node:18
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --production
+RUN npm install
 
 COPY . .
 
+ENV DB_USER=sql123
+ENV DB_PASSWORD=Haha123=
+ENV DB_NAME=cloudrun_app
+ENV DB_CONNECTION_NAME=udb-ti-24a1:us-west1:sql123
+ENV NODE_ENV=production
+
 EXPOSE 8080
 
-CMD ["node", "index.js"]
->>>>>>> 9b42a00 (Initial commit with Node.js app and Dockerfile)
+
