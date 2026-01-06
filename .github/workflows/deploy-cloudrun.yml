@@ -17,9 +17,9 @@ jobs:
 
     # Step 2: Setup Google Cloud SDK
     - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
+      uses: google-github-actions/setup-gcloud@v2
       with:
-        project_id: udb-ti-24a1          # Ganti dengan Project ID kamu
+        project_id: udb-ti-24a1          # Project ID kamu
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true
 
@@ -35,4 +35,5 @@ jobs:
           --image gcr.io/udb-ti-24a1/cloudrun-najwa-deploy-codelab \
           --region us-west1 \
           --platform managed \
-          --allow-unauthenticated
+          --allow-unauthenticated \
+          --quiet
