@@ -3,7 +3,7 @@ name: Deploy to Cloud Run
 on:
   push:
     branches:
-      - main  # Trigger otomatis setiap push ke main
+      - main
 
 env:
   SERVICE_NAME: cloudrun-najwa-deploy-codelab
@@ -16,34 +16,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout kode
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ Authenticate ke Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # 3️⃣ Setup gcloud SDK
       - name: Setup gcloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # 4️⃣ Build & push Docker image ke Artifact Registry
+      - name: Configure Docker
+        run: gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev
+
       - name: Build and Push Docker Image
         run: |
           IMAGE_URI=$GAR_LOCATION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$REPOSITORY/$IMAGE:latest
-          echo "Building and pushing Docker image: $IMAGE_URI"
-          gcloud builds submit --tag $IMAGE_URI
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
 
-      # 5️⃣ Deploy ke Cloud Run
       - name: Deploy to Cloud Run
         run: |
           IMAGE_URI=$GAR_LOCATION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$REPOSITORY/$IMAGE:latest
-          echo "Deploying $SERVICE_NAME to Cloud Run"
           gcloud run deploy $SERVICE_NAME \
             --image $IMAGE_URI \
             --region $GAR_LOCATION \
