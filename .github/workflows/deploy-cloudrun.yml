@@ -3,46 +3,49 @@ name: Deploy to Cloud Run
 on:
   push:
     branches:
-      - main
+      - main  # Trigger otomatis setiap push ke main
 
 env:
-  SERVICE_NAME: my-cloudrun-service
+  SERVICE_NAME: cloudrun-najwa-deploy-codelab
   GAR_LOCATION: us-west1
   REPOSITORY: cloudrun-najwa-deploy-codelab
-  IMAGE: my-app
+  IMAGE: cloudrun-app
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout kode
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Auth to Google Cloud
+      # 2️⃣ Authenticate ke Google Cloud
+      - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Set up gcloud
+      # 3️⃣ Setup gcloud SDK
+      - name: Setup gcloud SDK
         uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Configure Docker
+      # 4️⃣ Build & push Docker image ke Artifact Registry
+      - name: Build and Push Docker Image
         run: |
-          gcloud auth configure-docker $GAR_LOCATION-docker.pkg.dev
+          IMAGE_URI=$GAR_LOCATION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$REPOSITORY/$IMAGE:latest
+          echo "Building and pushing Docker image: $IMAGE_URI"
+          gcloud builds submit --tag $IMAGE_URI
 
-      - name: Build Docker image
-        run: |
-          docker build -t $GAR_LOCATION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$REPOSITORY/$IMAGE:latest .
-
-      - name: Push Docker image
-        run: |
-          docker push $GAR_LOCATION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$REPOSITORY/$IMAGE:latest
-
+      # 5️⃣ Deploy ke Cloud Run
       - name: Deploy to Cloud Run
         run: |
+          IMAGE_URI=$GAR_LOCATION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$REPOSITORY/$IMAGE:latest
+          echo "Deploying $SERVICE_NAME to Cloud Run"
           gcloud run deploy $SERVICE_NAME \
-            --image $GAR_LOCATION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$REPOSITORY/$IMAGE:latest \
+            --image $IMAGE_URI \
             --region $GAR_LOCATION \
             --platform managed \
             --allow-unauthenticated
